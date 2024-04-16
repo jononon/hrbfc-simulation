@@ -1,53 +1,6 @@
 import copy
 import random
-
-league_matches = [
-    {'Home': 'St. Albans City', 'Away': 'Hampton & Richmond Borough'},
-    {'Home': 'Taunton Town', 'Away': 'Torquay United'},
-    {'Home': 'Truro City', 'Away': 'Dover Athletic'},
-    {'Home': 'Weston-super-Mare', 'Away': 'Eastbourne Borough'},
-    {'Home': 'Taunton Town', 'Away': 'Weston-super-Mare'},
-    {'Home': 'Truro City', 'Away': 'Weymouth'},
-    {'Home': 'Aveley', 'Away': 'Bath City'},
-    {'Home': 'Braintree Town', 'Away': 'Eastbourne Borough'},
-    {'Home': 'Chippenham Town', 'Away': 'Chelmsford City'},
-    {'Home': 'Dartford', 'Away': 'Truro City'},
-    {'Home': 'Dover Athletic', 'Away': 'Yeovil Town'},
-    {'Home': 'Maidstone United', 'Away': 'Hampton & Richmond Borough'},
-    {'Home': 'Slough Town', 'Away': 'Welling United'},
-    {'Home': 'Taunton Town', 'Away': 'Hemel Hempstead Town'},
-    {'Home': 'Tonbridge Angels', 'Away': 'St. Albans City'},
-    {'Home': 'Torquay United', 'Away': 'Havant & Waterlooville'},
-    {'Home': 'Weymouth', 'Away': 'Farnborough'},
-    {'Home': 'Worthing', 'Away': 'Weston-super-Mare'}
-]
-
-league_table = {
-    'Yeovil Town': 92,
-    'Chelmsford City': 83,
-    'Worthing': 81,
-    'Braintree Town': 81,
-    'Maidstone United': 80,
-    'Bath City': 73,
-    'Hampton & Richmond Borough': 72,
-    'Aveley': 70,
-    'Farnborough': 69,
-    'Slough Town': 64,
-    'St. Albans City': 64,
-    'Chippenham Town': 61,
-    'Tonbridge Angels': 57,
-    'Weymouth': 55,
-    'Weston-super-Mare': 55,
-    'Welling United': 53,
-    'Truro City': 51,
-    'Hemel Hempstead Town': 49,
-    'Torquay United': 48,
-    'Eastbourne Borough': 48,
-    'Taunton Town': 45,
-    'Dartford': 43,
-    'Havant & Waterlooville': 37,
-    'Dover Athletic': 27
-}
+from football_api import get_standings, get_fixtures
 
 POINTS_FOR_WIN = 3
 POINTS_FOR_DRAW = 1
@@ -97,8 +50,37 @@ def generate_position_probability_dict(team):
 
     return position_probability_dict
 
+def get_league_table():
+    league_table = {}
+
+    standings = get_standings()
+
+    for team_data in standings['response'][0]['league']['standings'][0]:
+        team_name = team_data['team']['name']
+        points = team_data['points']
+        league_table[team_name] = points
+
+    return league_table
+
+def get_league_matches():
+    upcoming_fixtures = []
+
+    fixtures = get_fixtures()
+
+    for fixture in fixtures['response']:
+        if fixture['fixture']['status']['long'] == "Not Started":
+            home_team = fixture['teams']['home']['name']
+            away_team = fixture['teams']['away']['name']
+            upcoming_fixtures.append({"Home": home_team, "Away": away_team})
+
+    return upcoming_fixtures
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    league_table = get_league_table()
+
+    league_matches = get_league_matches()
+
     league_outcomes = []
 
     for simulation in range(SIMULATION_COUNT):
