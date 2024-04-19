@@ -7,23 +7,23 @@ POINTS_FOR_DRAW = 1
 SIMULATION_COUNT = 1_000_000
 
 
-def simulate_matches(teams, matches):
+def simulate_matches(teams, matches, forced_outcomes={}):
     if len(matches) == 0:
         return teams
     else:
         current_match = matches.pop()
 
-        outcome = random.choice(['Home', 'Away', 'Draw'])
+        outcome = forced_outcomes.get(f"{current_match['Home']}-{current_match['Away']}", random.choice(['Home', 'Away', 'Draw']))
 
         if outcome == 'Draw':
             # win for draw
             teams[current_match["Home"]] += POINTS_FOR_DRAW
             teams[current_match["Away"]] += POINTS_FOR_DRAW
-            return simulate_matches(teams, matches)
+            return simulate_matches(teams, matches, forced_outcomes)
         else:
             # win for home or away
             teams[current_match[outcome]] += POINTS_FOR_WIN
-            return simulate_matches(teams, matches)
+            return simulate_matches(teams, matches, forced_outcomes)
 
 
 def generate_position_probability_dict(team):
@@ -87,7 +87,11 @@ if __name__ == '__main__':
         simulation_league_table = copy.deepcopy(league_table)
         simulation_matches = copy.deepcopy(league_matches)
 
-        league_outcomes.append(simulate_matches(simulation_league_table, simulation_matches))
+        league_outcomes.append(simulate_matches(simulation_league_table, simulation_matches, {
+        # EXAMPLES:
+        # "Aveley-Bath City": "Draw",
+        # "Maidstone Utd-Hampton & Richmond": "Away",
+    }))
 
     for key, _ in sorted(league_table.items(), key=lambda item: item[1], reverse=True):
         print_string = f"{key} -- "
